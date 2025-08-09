@@ -18,10 +18,6 @@ import { TxOracleModule } from 'src/tx-oracle/tx-oracle.module'
       name: MessagesService.CHECK_INCOMING_MESSAGES_QUEUE_NAME,
       streams: { events: { maxLen: 2000 } }
     }),
-    BullModule.registerQueue({
-      name: MessagesService.SEND_MESSAGES_QUEUE_NAME,
-      streams: { events: { maxLen: 2000 } }
-    }),
     TypeOrmModule.forFeature([ IncomingMessage ]),
     AoModule,
     forwardRef(() => TxOracleModule)

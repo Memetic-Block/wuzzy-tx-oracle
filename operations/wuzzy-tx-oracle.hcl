@@ -29,11 +29,24 @@ job "wuzzy-tx-oracle" {
 
       config {
         image = "ghcr.io/memetic-block/wuzzy-tx-oracle:${VERSION}"
+        volumes = [
+          "secrets/oracle_key.json:/usr/src/app/wallet.json",
+        ]
       }
 
       env {
         VERSION="[[ .commit_sha ]]"
+        PORT="${NOMAD_PORT_http}"
+        IS_LIVE="true"
+        DO_CLEAN="false"
+        DO_DB_NUKE="false"
+        ORACLE_JWK_PATH="/usr/src/app/wallet.json"
         DB_DATABASE="wuzzy-tx-oracle"
+        MESSAGING_UNIT_ADDRESS="fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY"
+        SCHEDULER_UNIT_ADDRESS="_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA"
+        GQL_ENDPOINT="https://arweave-search.goldsky.com/graphql"
+        GATEWAY_URL="https://arweave.net"
+        PROCESS_ALLOWLIST=""
       }
 
       template {
@@ -62,6 +75,11 @@ job "wuzzy-tx-oracle" {
         EOF
         destination = "secrets/config.env"
         env = true
+      }
+
+      template {
+        data = "{{ with secret `kv/wuzzy/tx-oracle` }}{{ base64Decode .Data.data.ORACLE_KEY_BASE64 }}{{end}}"
+        destination = "secrets/oracle_key.json"
       }
 
       restart {

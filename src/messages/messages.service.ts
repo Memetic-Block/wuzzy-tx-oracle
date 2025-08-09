@@ -18,8 +18,6 @@ export class MessagesService implements OnApplicationBootstrap {
   static CHECK_INCOMING_MESSAGES_QUEUE_NAME = 'check-incoming-messages-queue'
   static CHECK_INCOMING_MESSAGES_JOB_NAME = 'check-incoming-messages'
   static CHECK_INCOMING_MESSAGES_JOB_DELAY = 1000 * 60 // 1 Minute
-  static SEND_MESSAGES_QUEUE_NAME = 'send-messages-queue'
-  static SEND_MESSAGES_JOB_NAME = 'send-messages'
   static ACTIONS = [ 'Get-Block', 'Get-Transaction', 'Get-Data' ]
 
   private readonly logger = new Logger(MessagesService.name)

@@ -9,30 +9,24 @@ import {
 import Arweave from 'arweave'
 import fs from 'fs'
 
-import { SendAosBaseOptions, sendAosMessage } from '../util/aos'
+import { SendAosBaseOptions } from '../util/aos'
 
 @Injectable()
 export class AoService implements OnApplicationBootstrap {
   private readonly logger = new Logger(AoService.name)
 
-  public readonly aosModuleId?: string
   public readonly aoCuUrl?: string
   public readonly aoMuUrl?: string
   public readonly aoGatewayUrl?: string
   public readonly aoGraphqlUrl?: string
   public readonly schedulerUnitAddress?: string
   public readonly messagingUnitAddress?: string
-  public processId?: string
 
   private readonly oracleJwk: JWKInterface
   public oracleAddress: string
   private readonly ao: any
 
   constructor(private configService: ConfigService) {
-    this.processId = this.configService.get<string>(
-      'PROCESS_ID',
-      { infer: true }
-    )
     this.aoCuUrl = this.configService.get<string>(
       'AO_CU_URL',
       { infer: true }
@@ -68,15 +62,6 @@ export class AoService implements OnApplicationBootstrap {
     this.logger.log(
       `Using Messaging Unit Address [${this.messagingUnitAddress}]`
     )
-    const aosModuleId = this.configService.get<string>(
-      'AOS_MODULE_ID',
-      { infer: true }
-    )
-    if (!aosModuleId) {
-      throw new Error('AOS_MODULE_ID is not set!')
-    }
-    this.aosModuleId = aosModuleId
-    this.logger.log(`Using AOS Module ID [${this.aosModuleId}]`)
     const ORACLE_JWK_PATH = this.configService.get<string>(
       'ORACLE_JWK_PATH',
       { infer: true }
@@ -118,40 +103,8 @@ export class AoService implements OnApplicationBootstrap {
     this.logger.log(`Bootstrapped with Oracle Address [${this.oracleAddress}]`)
   }
 
-  private async spawnAoProcess() {
-    if (this.processId) {
-      this.logger.warn(
-        `AO processId [${this.processId}] already exists, ` +
-          `not spawning new AO process`
-      )
-      return
-    }
-
-    this.logger.log('Spawning new AO process')
-
-    try {
-      const processId = await this.ao.spawn({
-        module: this.aosModuleId,
-        scheduler: this.schedulerUnitAddress,
-        signer: createDataItemSigner(this.oracleJwk),
-        tags: [
-          { name: 'Authority', value: this.messagingUnitAddress },
-          { name: 'App-Name', value: 'Wuzzy-Transaction-Oracle' }
-        ]
-      })
-
-      if (typeof processId === 'string') {
-        this.logger.log(`Spawned AO process with ID [${processId}]`)
-        this.processId = processId
-      }
-    } catch (error) {
-      this.logger.error('Failed to spawn AO process', error)
-      throw error
-    }
-  }
-
   public async results(
-    processId: string | undefined = this.processId,
+    processId: string | undefined,
     opts: {
       sort?: 'ASC' | 'DESC',
       limit?: number,
