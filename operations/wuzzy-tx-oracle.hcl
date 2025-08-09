@@ -29,9 +29,7 @@ job "wuzzy-tx-oracle" {
 
       config {
         image = "ghcr.io/memetic-block/wuzzy-tx-oracle:${VERSION}"
-        volumes = [
-          "secrets/oracle_key.json:/usr/src/app/wallet.json",
-        ]
+        volumes = [ "secrets/oracle_key.json:/usr/src/app/wallet.json" ]
       }
 
       env {
@@ -78,7 +76,11 @@ job "wuzzy-tx-oracle" {
       }
 
       template {
-        data = "{{ with secret `kv/wuzzy/tx-oracle` }}{{ base64Decode .Data.data.ORACLE_KEY_BASE64 }}{{end}}"
+        data = <<-EOF
+        {{- with secret `kv/wuzzy/tx-oracle` }}
+        {{- base64Decode .Data.data.ORACLE_KEY_BASE64 }}
+        {{- end }}
+        EOF
         destination = "secrets/oracle_key.json"
       }
 
