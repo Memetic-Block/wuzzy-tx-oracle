@@ -22,12 +22,10 @@ jobs:
         run: |
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          [ "$VERSION" == "master" ] && VITE_SEARCH_API_URL="https://wuzzy-search-api-stage.hel.memeticblock.net"
           docker build . \
             --file Dockerfile \
             --tag $IMAGE_NAME \
-            --label "runnumber=${GITHUB_RUN_ID}" \
-            --build-arg VITE_SEARCH_API_URL=$VITE_SEARCH_API_URL
+            --label "runnumber=${GITHUB_RUN_ID}"
 
       - name: Log in to registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
