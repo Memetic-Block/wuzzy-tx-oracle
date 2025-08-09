@@ -19,7 +19,7 @@ import { IncomingMessage } from './messages/schema/incoming-message.entity'
       useFactory: (
         config: ConfigService<{
           REDIS_MODE: string
-          REDIS_HOSTNAME: string
+          REDIS_HOST: string
           REDIS_PORT: number
           REDIS_MASTER_NAME: string
           REDIS_SENTINEL_1_HOST: string
@@ -38,7 +38,7 @@ import { IncomingMessage } from './messages/schema/incoming-message.entity'
         )
 
         let connection: ConnectionOptions = {
-          host: config.get<string>('REDIS_HOSTNAME', { infer: true }),
+          host: config.get<string>('REDIS_HOST', { infer: true }),
           port: config.get<number>('REDIS_PORT', { infer: true }),
         }
 

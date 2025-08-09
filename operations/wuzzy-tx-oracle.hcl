@@ -30,19 +30,38 @@ job "wuzzy-tx-oracle" {
       config {
         image = "ghcr.io/memetic-block/wuzzy-tx-oracle:${VERSION}"
       }
-      
+
       env {
         VERSION="[[ .commit_sha ]]"
+        DB_DATABASE="wuzzy-tx-oracle"
       }
 
       template {
         data = <<-EOF
-        {{- range service "container-registry" }}
-        CONTAINER_REGISTRY_ADDR="{{ .Address }}:{{ .Port }}"
+        {{- range service "wuzzy-tx-oracle-redis" }}
+        REDIS_HOST="{{ .Address }}"
+        REDIS_PORT="{{ .Port }}"
+        {{- end }}
+        {{- range service "wuzzy-tx-oracle-postgres" }}
+        DB_HOST="{{ .Address }}"
+        DB_PORT="{{ .Port }}"
         {{- end }}
         EOF
         env = true
-        destination = "local/env"
+        destination = "local/config.env"
+      }
+
+      vault { policies = [ "wuzzy-tx-oracle" ] }
+
+      template {
+        data = <<-EOF
+        {{ with secret "kv/wuzzy/tx-oracle" }}
+        DB_USERNAME="{{ .Data.data.DB_USER }}"
+        DB_PASSWORD="{{ .Data.data.DB_PASSWORD }}"
+        {{ end }}
+        EOF
+        destination = "secrets/config.env"
+        env = true
       }
 
       restart {
