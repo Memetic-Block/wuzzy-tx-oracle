@@ -77,6 +77,8 @@ export class TxOracleService implements OnApplicationBootstrap {
     )?.value
     let result: null | GQLNodeInterface | string = null
     let replyTag = ''
+    let idTagName = ''
+    let idTagValue = ''
     let errorMessage = ''
     switch (actionTag) {
       case 'Get-Block':
@@ -89,6 +91,8 @@ export class TxOracleService implements OnApplicationBootstrap {
           errorMessage = TxOracleService.ERROR_FETCHING_BLOCK
         } else {
           result = await this.getBlock(height)
+          idTagName = 'Block-Height'
+          idTagValue = height.toString()
           if (TxOracleService.ERROR_FETCHING_BLOCK === result) {
             errorMessage = TxOracleService.ERROR_FETCHING_BLOCK
           }
@@ -103,6 +107,8 @@ export class TxOracleService implements OnApplicationBootstrap {
           errorMessage = TxOracleService.ERROR_FETCHING_TRANSACTION
         } else {
           result = await this.getTransaction(txId)
+          idTagName = 'Transaction-Id'
+          idTagValue = txId
           if (TxOracleService.ERROR_FETCHING_TRANSACTION === result) {
             errorMessage = TxOracleService.ERROR_FETCHING_TRANSACTION
           }
@@ -117,6 +123,8 @@ export class TxOracleService implements OnApplicationBootstrap {
           errorMessage = TxOracleService.ERROR_FETCHING_DATA
         } else {
           result = await this.getData(dataTxId)
+          idTagName = 'Transaction-Id'
+          idTagValue = dataTxId
           if (TxOracleService.ERROR_FETCHING_DATA === result) {
             errorMessage = TxOracleService.ERROR_FETCHING_DATA
           }
@@ -138,6 +146,9 @@ export class TxOracleService implements OnApplicationBootstrap {
     const tags = [{ name: 'Action', value: replyTag }]
     if (errorMessage) {
       tags.push({ name: 'Error', value: errorMessage })
+    }
+    if (idTagName && idTagValue) {
+      tags.push({ name: idTagName, value: idTagValue })
     }
     const replyMessageId = await this.aoService.sendAosMessage({
       processId: message.from,
@@ -192,7 +203,7 @@ export class TxOracleService implements OnApplicationBootstrap {
     this.logger.log(`Fetching data for transaction [${transactionId}]`)
     try {
       const response = await this.httpService.axiosRef.get(
-        `${this.gatewayUrl}/${transactionId}`
+        `${this.gatewayUrl}/raw/${transactionId}`
       )
       return response.data
     } catch (error) {
