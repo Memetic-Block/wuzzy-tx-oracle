@@ -119,10 +119,13 @@ export class TxOracleService implements OnApplicationBootstrap {
         const dataTxId = message.transaction.tags.find(
           tag => tag.name === 'Transaction-Id'
         )?.value
+        const raw = message.transaction.tags.find(
+          tag => tag.name === 'Raw'
+        )?.value === 'true'
         if (!dataTxId) {
           errorMessage = TxOracleService.ERROR_FETCHING_DATA
         } else {
-          result = await this.getData(dataTxId)
+          result = await this.getData(dataTxId, { raw })
           idTagName = 'Transaction-Id'
           idTagValue = dataTxId
           if (TxOracleService.ERROR_FETCHING_DATA === result) {
@@ -199,12 +202,16 @@ export class TxOracleService implements OnApplicationBootstrap {
     }
   }
 
-  async getData(transactionId: string) {
+  async getData(
+    transactionId: string,
+    opts: { raw: boolean } = { raw: false }
+  ) {
     this.logger.log(`Fetching data for transaction [${transactionId}]`)
     try {
-      const response = await this.httpService.axiosRef.get(
-        `${this.gatewayUrl}/raw/${transactionId}`
-      )
+      const requestPath = opts.raw
+        ? `${this.gatewayUrl}/raw/${transactionId}`
+        : `${this.gatewayUrl}/${transactionId}`
+      const response = await this.httpService.axiosRef.get(requestPath)
       return response.data
     } catch (error) {
       if (error instanceof AxiosError && error.status === 404) {
